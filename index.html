@@ -85,7 +85,7 @@ a{color:var(--gold);text-decoration:none}
 .card .sub{font-size:13px;color:var(--text-muted);margin-bottom:16px}
 
 /* Page system */
-.page{display:none;animation:fade .3s ease}
+.page{display:none;animation:fade .3s ease;padding-bottom:90px}
 .page.active{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
@@ -621,7 +621,7 @@ input[type=range]{width:100%;accent-color:var(--gold);height:24px}
       <div class="sub">Ajoute une mesure quand tu veux — le graphique se met à jour tout seul</div>
 
       <div class="field"><label>Type de mesure</label>
-        <input type="text" id="spType" placeholder="ex: Poids, Tractions, Développé couché…" list="spTypeList">
+        <input type="text" id="spType" placeholder="ex: Poids, Tractions, Squat…" list="spTypeList">
         <datalist id="spTypeList"></datalist>
       </div>
       <div class="sp-row2">
