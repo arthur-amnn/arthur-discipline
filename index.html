@@ -90,6 +90,30 @@ a{color:var(--gold);text-decoration:none}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* Countdown hero (today page) */
+/* Suivi page: monthly review reminder */
+.mr-badge{font-size:16px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:6px}
+#monthlyReminderCard{background:linear-gradient(135deg,var(--gold-soft),transparent);border:1px solid var(--gold)}
+
+/* Suivi page: monthly review stats */
+.mr-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0}
+.mr-stats .ms{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.mr-stats .ms-lbl{font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
+.mr-stats .ms-val{font-family:'Instrument Serif',serif;font-size:22px;color:var(--gold);line-height:1.1;margin-top:2px}
+.mr-stats .ms-val small{font-size:13px;color:var(--text-muted);font-family:inherit}
+
+/* Suivi page: sport section */
+.sp-row2{display:flex;gap:10px}
+.sp-row2 .field{flex:1}
+.sp-picker{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 10px}
+.sp-picker button{font-size:13px;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);cursor:pointer}
+.sp-picker button.active{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:600}
+.sp-history-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+.sp-history-row .sp-date{color:var(--text-muted);font-size:12px}
+.sp-history-row .sp-val{font-weight:600;color:var(--gold)}
+.sp-history-row .sp-del{background:none;border:none;color:var(--text-faint);font-size:16px;cursor:pointer;padding:4px 8px}
+.sp-history-row .sp-del:hover{color:var(--error)}
+
+/* Countdown hero (today page) */
 .cd-hero{background:linear-gradient(135deg,var(--surface),var(--surface-2));border:1px solid var(--border);border-radius:16px;padding:14px 18px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden}
 .cd-hero:before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,var(--gold-soft),transparent 70%);pointer-events:none}
 .cd-hero-top{position:relative}
@@ -407,6 +431,17 @@ input[type=range]{width:100%;accent-color:var(--gold);height:24px}
 
   <!-- PAGE: DASHBOARD -->
   <div class="page" id="page-dash">
+    <div class="card" id="dashMrBanner" style="display:none;background:linear-gradient(135deg,var(--gold-soft),transparent);border:1px solid var(--gold);cursor:pointer">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="dashMrCheckbox" style="flex:0 0 auto;width:26px;height:26px;border:2px solid var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--gold)">☐</span>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">Bilan de <span id="dashMrMonthLabel">ce mois</span> à valider</div>
+          <div class="sub" style="margin:2px 0 0">Dernier jour du mois — touche pour ouvrir Suivi et valider.</div>
+        </div>
+        <span style="font-size:18px;color:var(--gold)">→</span>
+      </div>
+    </div>
+
     <div class="countdown">
       <div class="num" id="cdDays">—</div>
       <div class="lbl">jours avant le 31 août 2027</div>
@@ -553,6 +588,56 @@ input[type=range]{width:100%;accent-color:var(--gold);height:24px}
     </div>
   </div>
 
+  <!-- PAGE: SUIVI -->
+  <div class="page" id="page-suivi">
+
+    <div class="card" id="monthlyReminderCard" style="display:none">
+      <div class="mr-badge">📋 <span id="mrMonthLabel">Bilan de septembre</span> à valider</div>
+      <div class="small muted" style="margin-top:4px">Le mois se termine — prends 5 min pour faire le point.</div>
+    </div>
+
+    <div class="card">
+      <h2>📋 Bilan mensuel</h2>
+      <div class="sub">À faire le dernier jour du mois</div>
+      <div class="field"><label>Mois</label><select id="mrMonthSelect"></select></div>
+
+      <div class="mr-stats" id="mrStats"></div>
+
+      <div class="field"><label>Score global du mois — /10</label>
+        <div class="range-row"><div class="r-top"><span>Note</span><span class="v" id="mrScoreVal">—</span></div>
+          <input type="range" id="mrScoreRange" min="0" max="10" step="1" value="5">
+        </div>
+      </div>
+      <div class="field"><label>Ce qui a marché</label><textarea id="mrGood" placeholder="Les victoires du mois"></textarea></div>
+      <div class="field"><label>Ce qui n'a pas marché</label><textarea id="mrBad" placeholder="Les points de friction"></textarea></div>
+      <div class="field"><label>Action pour le mois suivant</label><textarea id="mrAction" placeholder="Le changement concret à faire"></textarea></div>
+
+      <button class="btn" id="mrValidateBtn">✅ Valider ce bilan</button>
+      <div class="small center muted" id="mrValidatedTag" style="margin-top:10px;display:none">✅ Bilan validé</div>
+    </div>
+
+    <div class="card">
+      <h2>💪 Sport & poids</h2>
+      <div class="sub">Ajoute une mesure quand tu veux — le graphique se met à jour tout seul</div>
+
+      <div class="field"><label>Type de mesure</label>
+        <input type="text" id="spType" placeholder="ex: Poids, Tractions, Développé couché…" list="spTypeList">
+        <datalist id="spTypeList"></datalist>
+      </div>
+      <div class="sp-row2">
+        <div class="field"><label>Valeur</label><input type="number" id="spValue" step="0.1" placeholder="ex: 72.4"></div>
+        <div class="field"><label>Unité</label><input type="text" id="spUnit" placeholder="kg, reps…"></div>
+      </div>
+      <div class="field"><label>Note (optionnel)</label><input type="text" id="spNote" placeholder="ex: à froid, après séance…"></div>
+      <button class="btn" id="spAddBtn">＋ Ajouter la mesure</button>
+
+      <div class="sp-picker" id="spPicker"></div>
+      <div id="spChartArea"></div>
+      <div id="spHistory"></div>
+    </div>
+
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -568,6 +653,7 @@ input[type=range]{width:100%;accent-color:var(--gold);height:24px}
   <button data-nav="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>Dashboard</button>
   <button data-nav="goals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Objectifs</button>
   <button data-nav="vision"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>Vision</button>
+  <button data-nav="suivi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Suivi</button>
 </nav>
 
 <script>
@@ -577,6 +663,16 @@ const GRADES=['Member','Second','Première','Première B','Première C','Premiè
 
 let memStore=null; // fallback if localStorage unavailable (declared before state)
 let state=load();
+function normalizeState(){
+  if(!state.monthlyReviews)state.monthlyReviews={};
+  if(!state.sportLogs)state.sportLogs=[];
+  if(!state.checkins)state.checkins={};
+  if(!state.grades)state.grades=[];
+  if(!state.settings)state.settings={ydiWeeklyGoal:7};
+  if(state.repriseCount==null)state.repriseCount=0;
+  if(!state.currentGrade)state.currentGrade='Terminal C';
+}
+normalizeState();
 
 function storageGet(){
   try{return localStorage.getItem(STORE);}catch(e){return memStore;}
@@ -589,7 +685,7 @@ function load(){
   try{return raw?JSON.parse(raw):initState();}catch(e){return initState();}
 }
 function initState(){
-  return {checkins:{},grades:[{grade:'Terminal C',date:todayStr()}],currentGrade:'Terminal C',settings:{ydiWeeklyGoal:7},repriseCount:0};
+  return {checkins:{},grades:[{grade:'Terminal C',date:todayStr()}],currentGrade:'Terminal C',settings:{ydiWeeklyGoal:7},repriseCount:0,monthlyReviews:{},sportLogs:[]};
 }
 function save(){storageSet(JSON.stringify(state));}
 function todayStr(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -617,6 +713,8 @@ document.querySelectorAll('.nav button').forEach(b=>{
     b.classList.add('active');
     document.getElementById('page-'+b.dataset.nav).classList.add('active');
     render();
+    // refresh Suivi content when entering the tab (stats may have changed after today's checkin)
+    if(b.dataset.nav==='suivi'){initMr();initSp();}
   });
 });
 
@@ -703,7 +801,7 @@ document.getElementById('importBtn').addEventListener('click',()=>document.getEl
 document.getElementById('importFile').addEventListener('change',e=>{
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{try{state=JSON.parse(r.result);save();bindFields();render();toast('⬆️ Données importées.');}catch(err){toast('⚠️ Fichier invalide.');}};
+  r.onload=()=>{try{state=JSON.parse(r.result);normalizeState();save();bindFields();render();initMr();initSp();toast('⬆️ Données importées.');}catch(err){toast('⚠️ Fichier invalide.');}};
   r.readAsText(f);
 });
 
@@ -1062,8 +1160,241 @@ function tlToggle(field){
 }
 renderTimeline();
 
+/* ---- MONTHLY REVIEW ---- */
+const MOIS_FR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+let _mrKey=null; // currently displayed month key (YYYY-MM)
+
+function mrKey(y,m){return y+'-'+String(m+1).padStart(2,'0');}
+function isLastDayOfMonth(){
+  const n=new Date();const t=new Date(n.getFullYear(),n.getMonth()+1,0);
+  return n.getDate()===t.getDate();
+}
+function buildMrMonthList(){
+  // months from 2026-09 to current month
+  const sel=document.getElementById('mrMonthSelect');
+  const now=new Date();const cy=now.getFullYear();const cm=now.getMonth();
+  sel.innerHTML='';
+  const months=[];
+  let y=2026,m=8; // Sep 2026 = month index 8
+  while(y<cy||(y===cy&&m<=cm)){
+    months.push({y,m});
+    m++;if(m>11){m=0;y++;}
+  }
+  months.reverse().forEach(({y,m})=>{
+    const opt=document.createElement('option');
+    opt.value=mrKey(y,m);
+    opt.textContent=MOIS_FR[m]+' '+y;
+    sel.appendChild(opt);
+  });
+  if(!_mrKey)_mrKey=mrKey(cy,cm);
+  sel.value=_mrKey;
+}
+function renderMrStats(key){
+  // compute auto stats for the given YYYY-MM month
+  const [y,m]=key.split('-').map(Number);
+  const daysInMonth=new Date(y,m,0).getDate();
+  const now=new Date();
+  const isCurrentMonth=(now.getFullYear()===y&&now.getMonth()+1===m);
+  const daysElapsed=isCurrentMonth?now.getDate():daysInMonth;
+  let sportCount=0,dieuCount=0,ydiMin=0,daysTracked=0;
+  const bedtimes=[];
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=key+'-'+String(d).padStart(2,'0');
+    const c=peekCheckin(ds);if(!c)continue;
+    daysTracked++;
+    if(c.sportDone)sportCount++;
+    if(c.priereMatin&&c.priereSoir)dieuCount++;
+    if(c.bedtime)bedtimes.push(c.bedtime);
+    ydiMin+=(c.ydiMinutes||0);
+  }
+  const dieuPct=Math.round(dieuCount/Math.max(1,daysElapsed)*100);
+  const ydiH=Math.round(ydiMin/60*10)/10;
+  const SPORT_TARGET=16; // 4 séances/semaine
+  const avgBed=bedtimes.length?bedtimes.reduce((a,b)=>a+b,0)/bedtimes.length:null;
+  const avgBedStr=avgBed!=null?fmtBed(avgBed):'—';
+  document.getElementById('mrStats').innerHTML=`
+    <div class="ms"><div class="ms-lbl">Séances sport</div><div class="ms-val">${sportCount} <small>/ ${SPORT_TARGET}</small></div></div>
+    <div class="ms"><div class="ms-lbl">YDI total</div><div class="ms-val">${ydiH}h <small>/ 8h mini</small></div></div>
+    <div class="ms"><div class="ms-lbl">Prière complète</div><div class="ms-val">${dieuPct}%</div></div>
+    <div class="ms"><div class="ms-lbl">Moyenne coucher</div><div class="ms-val">${avgBedStr}</div></div>`;
+}
+function loadMr(key){
+  const mr=state.monthlyReviews[key]||{};
+  document.getElementById('mrScoreRange').value=mr.score!=null?mr.score:5;
+  document.getElementById('mrScoreVal').textContent=mr.score!=null?mr.score:'—';
+  document.getElementById('mrGood').value=mr.good||'';
+  document.getElementById('mrBad').value=mr.bad||'';
+  document.getElementById('mrAction').value=mr.action||'';
+  const validated=!!mr.validated;
+  document.getElementById('mrValidatedTag').style.display=validated?'block':'none';
+  document.getElementById('mrValidateBtn').textContent=validated?'✅ Bilan validé':'✅ Valider ce bilan';
+  renderMrStats(key);
+}
+function saveMr(){
+  const key=document.getElementById('mrMonthSelect').value;
+  if(!state.monthlyReviews[key])state.monthlyReviews[key]={};
+  const mr=state.monthlyReviews[key];
+  mr.score=+document.getElementById('mrScoreRange').value;
+  mr.good=document.getElementById('mrGood').value;
+  mr.bad=document.getElementById('mrBad').value;
+  mr.action=document.getElementById('mrAction').value;
+  save();
+}
+function initMr(){
+  buildMrMonthList();
+  loadMr(_mrKey);
+  // show reminder (in Suivi tab AND on Dashboard) if last day of month and bilan not validated
+  const now=new Date();
+  const key=mrKey(now.getFullYear(),now.getMonth());
+  const validated=!!(state.monthlyReviews[key]||{}).validated;
+  const show=isLastDayOfMonth()&&!validated;
+  const card=document.getElementById('monthlyReminderCard');
+  if(card){
+    card.style.display=show?'block':'none';
+    document.getElementById('mrMonthLabel').textContent='Bilan de '+MOIS_FR[now.getMonth()].toLowerCase();
+  }
+  const dashBanner=document.getElementById('dashMrBanner');
+  if(dashBanner){
+    dashBanner.style.display=show?'block':'none';
+    document.getElementById('dashMrMonthLabel').textContent=MOIS_FR[now.getMonth()].toLowerCase();
+  }
+}
+document.getElementById('dashMrBanner').addEventListener('click',()=>{
+  document.querySelector('.nav button[data-nav="suivi"]').click();
+});
+document.getElementById('dashMrCheckbox').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  const now=new Date();
+  const key=mrKey(now.getFullYear(),now.getMonth());
+  if(!state.monthlyReviews[key])state.monthlyReviews[key]={};
+  state.monthlyReviews[key].validated=true;
+  save();
+  document.getElementById('dashMrBanner').style.display='none';
+  const card=document.getElementById('monthlyReminderCard');
+  if(card)card.style.display='none';
+  toast('✅ Bilan marqué comme validé. Tu peux compléter les détails dans Suivi quand tu veux.');
+});
+document.getElementById('mrMonthSelect').addEventListener('change',e=>{
+  _mrKey=e.target.value;loadMr(_mrKey);
+});
+document.getElementById('mrScoreRange').addEventListener('input',e=>{
+  document.getElementById('mrScoreVal').textContent=e.target.value;saveMr();
+});
+['mrGood','mrBad','mrAction'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>saveMr());
+});
+document.getElementById('mrValidateBtn').addEventListener('click',()=>{
+  saveMr();
+  const key=document.getElementById('mrMonthSelect').value;
+  state.monthlyReviews[key].validated=true;save();
+  document.getElementById('mrValidatedTag').style.display='block';
+  document.getElementById('mrValidateBtn').textContent='✅ Bilan validé';
+  // hide reminder (both in Suivi and Dashboard)
+  const card=document.getElementById('monthlyReminderCard');
+  if(card)card.style.display='none';
+  const dashBanner=document.getElementById('dashMrBanner');
+  if(dashBanner)dashBanner.style.display='none';
+  toast('✅ Bilan du mois validé.');
+});
+
+/* ---- SPORT LOGS ---- */
+let _spType=null;
+
+function spTypes(){
+  const types=[...new Set(state.sportLogs.map(l=>l.type))].filter(Boolean);
+  // preset suggestions
+  ['Poids','Tractions','Dips','Développé couché','Squat','Deadlift','Muscle-up'].forEach(t=>{
+    if(!types.includes(t))types.push(t);
+  });
+  return types;
+}
+function renderSpPicker(){
+  const used=[...new Set(state.sportLogs.map(l=>l.type))].filter(Boolean);
+  if(!used.length){document.getElementById('spPicker').innerHTML='';return;}
+  document.getElementById('spPicker').innerHTML=used.map(t=>{
+    return `<button class="${_spType===t?'active':''}" data-sptype="${t}">${t}</button>`;
+  }).join('');
+  document.getElementById('spPicker').querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click',()=>{_spType=b.dataset.sptype;renderSpPicker();renderSpChart();renderSpHistory();});
+  });
+}
+function renderSpChart(){
+  const area=document.getElementById('spChartArea');
+  const logs=state.sportLogs.filter(l=>l.type===_spType).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!logs.length||!_spType){area.innerHTML='';return;}
+  const W=300,H=130,P={l:30,r:8,t:12,b:18};
+  const iw=W-P.l-P.r,ih=H-P.t-P.b;
+  const vals=logs.map(l=>l.value);
+  const yMin=Math.min(...vals);
+  const yMax=Math.max(...vals,yMin+1);
+  const range=(yMax-yMin)||1;
+  const n=logs.length;
+  const xi=i=>P.l+(n<=1?iw/2:(i/(n-1))*iw);
+  const yi=v=>P.t+ih-((v-yMin)/range)*ih;
+  let grid='';
+  for(let g=0;g<=3;g++){const yy=P.t+(g/3)*ih;const val=yMax-(g/3)*range;
+    grid+=`<line x1="${P.l}" y1="${yy}" x2="${W-P.r}" y2="${yy}" stroke="var(--border)" stroke-width=".5"/><text x="${P.l-4}" y="${yy+4}" text-anchor="end" font-size="9" fill="var(--text-muted)">${val.toFixed(1)}</text>`;}
+  const pts=logs.map((l,i)=>[xi(i),yi(l.value)]);
+  const path=pts.map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const areaPath=path+` L${pts[pts.length-1][0].toFixed(1)} ${yi(yMin).toFixed(1)} L${pts[0][0].toFixed(1)} ${yi(yMin).toFixed(1)} Z`;
+  const xLabels=logs.map((l,i)=>{
+    if(n<=6||i%Math.ceil(n/5)===0||i===n-1){
+      const x=new Date(l.date+'T00:00');return `<text x="${xi(i).toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="9" fill="var(--text-muted)">${x.getDate()}/${x.getMonth()+1}</text>`;}
+    return '';}).join('');
+  const unit=logs[logs.length-1].unit||'';
+  const dots=pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="var(--gold)"/>`).join('');
+  area.innerHTML=`<div style="margin-bottom:6px;font-size:13px;font-weight:600;color:var(--text)">${_spType} <span style="color:var(--text-muted);font-weight:400">(${unit})</span></div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;display:block;overflow:visible">${grid}
+      <path d="${areaPath}" fill="var(--gold)" opacity=".12"/>
+      <path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/>
+      ${dots}${xLabels}</svg>`;
+}
+function renderSpHistory(){
+  const el=document.getElementById('spHistory');
+  const logs=state.sportLogs.filter(l=>l.type===_spType).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!logs.length){el.innerHTML='';return;}
+  el.innerHTML=logs.map((l,i)=>`
+    <div class="sp-history-row">
+      <span class="sp-date">${fmtDateShort(l.date)}</span>
+      <span>${l.note?'<em style="color:var(--text-muted);font-size:12px">'+l.note+'</em>':''}</span>
+      <span class="sp-val">${l.value} ${l.unit||''}</span>
+      <button class="sp-del" data-i="${state.sportLogs.indexOf(l)}" aria-label="Supprimer">×</button>
+    </div>`).join('');
+  el.querySelectorAll('.sp-del').forEach(b=>{
+    b.addEventListener('click',()=>{
+      state.sportLogs.splice(+b.dataset.i,1);save();
+      renderSpPicker();renderSpChart();renderSpHistory();
+    });
+  });
+}
+function initSp(){
+  // fill datalist with suggestions
+  const dl=document.getElementById('spTypeList');
+  dl.innerHTML=spTypes().map(t=>`<option value="${t}">`).join('');
+  renderSpPicker();
+  if(!_spType&&state.sportLogs.length)_spType=state.sportLogs[state.sportLogs.length-1].type;
+  renderSpChart();renderSpHistory();
+}
+document.getElementById('spAddBtn').addEventListener('click',()=>{
+  const type=document.getElementById('spType').value.trim();
+  const val=parseFloat(document.getElementById('spValue').value);
+  const unit=document.getElementById('spUnit').value.trim();
+  const note=document.getElementById('spNote').value.trim();
+  if(!type||isNaN(val)){toast('⚠️ Remplis le type et la valeur.');return;}
+  state.sportLogs.push({date:todayStr(),type,value:val,unit,note});
+  save();
+  _spType=type;
+  document.getElementById('spType').value='';
+  document.getElementById('spValue').value='';
+  document.getElementById('spNote').value='';
+  initSp();renderSpPicker();renderSpChart();renderSpHistory();
+  toast('💪 Mesure ajoutée : '+type+' '+val+' '+unit);
+});
+
 bindFields();
 render();
+initMr();
+initSp();
 </script>
 </body>
 </html>
