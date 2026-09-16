@@ -802,7 +802,7 @@ document.getElementById('importFile').addEventListener('change',e=>{
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=()=>{try{state=JSON.parse(r.result);normalizeState();save();bindFields();render();initMr();initSp();toast('⬆️ Données importées.');}catch(err){toast('⚠️ Fichier invalide.');}};
-  r.readAsText(f);
+  r.readAsText(f);e.target.value='';
 });
 
 /* ---- RENDER ---- */
@@ -833,8 +833,7 @@ function render(){
   const sportWeek=week.filter(d=>(state.checkins[d]||{}).sportDone).length;
   const dieuWeek=week.filter(d=>{const c=state.checkins[d]||{};return c.priereMatin&&c.priereSoir;}).length;
   const phoneWeek=week.filter(d=>(state.checkins[d]||{}).phoneAway).length;
-  const bedtimes=week.map(d=>(state.checkins[d]||{}).bedtime).filter(v=>v).map(v=>v);
-  const avgBed=bedtimes.length?bedtimes.reduce((a,b)=>a+b,0)/bedtimes.length:0;
+  const bedtimes=week.map(d=>(state.checkins[d]||{}).bedtime).filter(v=>v);
 
   document.getElementById('kpiGrid').innerHTML=`
     <div class="kpi"><div class="v gold">${Math.round(ydiWeek/60*10)/10}h</div><div class="l">YDI / semaine</div></div>
@@ -987,7 +986,7 @@ let _chartTab='ydi';
 function renderCharts(){
   const area=document.getElementById('chartArea');
   const data=_chartData(_chartTab);
-  if(!data.points.length||data.points.every(p=>p.y===null)){area.innerHTML='<div class="chart-empty">Pas encore assez de données. Remplis tes journées pour voir les tendances apparaître.</div>';return;}
+  if(!data.points.length||data.points.every(p=>p.y===null||p.y===0)){area.innerHTML='<div class="chart-empty">Pas encore assez de données. Remplis tes journées pour voir les tendances apparaître.</div>';return;}
   const W=300,H=150,P={l:24,r:8,t:12,b:18};
   const iw=W-P.l-P.r,ih=H-P.t-P.b;
   const ys=data.points.map(p=>p.y).filter(v=>v!==null);
@@ -1040,7 +1039,10 @@ function _chartData(tab){
   if(tab==='bed'){
     const ds=days(14),xl=xlabels(ds);
     const b=ds.map((d,i)=>{const c=peekCheckin(d);return c&&c.bedtime?c.bedtime:null;});
-    return{type:'line',min:21,max:26,fmtY:v=>fmtBed(v),points:ds.map((d,i)=>({x:i,xl:xl[i],y:b[i]})),series:[{label:'Heure de coucher',color:'var(--gold)',points:b}]};
+    const bVals=b.filter(v=>v!==null);
+    const bMin=bVals.length?Math.min(21,Math.floor(Math.min(...bVals))):21;
+    const bMax=bVals.length?Math.max(26,Math.ceil(Math.max(...bVals))+1):26;
+    return{type:'line',min:bMin,max:bMax,fmtY:v=>fmtBed(v),points:ds.map((d,i)=>({x:i,xl:xl[i],y:b[i]})),series:[{label:'Heure de coucher',color:'var(--gold)',points:b}]};
   }
   return{type:'bar',points:[]};
 }
@@ -1328,15 +1330,20 @@ function renderSpChart(){
   const yMin=Math.min(...vals);
   const yMax=Math.max(...vals,yMin+1);
   const range=(yMax-yMin)||1;
+  // center line when all values are identical (avoid line stuck at bottom)
+  const allSame=vals.every(v=>v===vals[0]);
+  const yMinChart=allSame?yMin-1:yMin;
+  const yMaxChart=allSame?yMin+1:yMax;
+  const rangeChart=(yMaxChart-yMinChart)||1;
   const n=logs.length;
   const xi=i=>P.l+(n<=1?iw/2:(i/(n-1))*iw);
-  const yi=v=>P.t+ih-((v-yMin)/range)*ih;
+  const yi=v=>P.t+ih-((v-yMinChart)/rangeChart)*ih;
   let grid='';
-  for(let g=0;g<=3;g++){const yy=P.t+(g/3)*ih;const val=yMax-(g/3)*range;
+  for(let g=0;g<=3;g++){const yy=P.t+(g/3)*ih;const val=yMaxChart-(g/3)*rangeChart;
     grid+=`<line x1="${P.l}" y1="${yy}" x2="${W-P.r}" y2="${yy}" stroke="var(--border)" stroke-width=".5"/><text x="${P.l-4}" y="${yy+4}" text-anchor="end" font-size="9" fill="var(--text-muted)">${val.toFixed(1)}</text>`;}
   const pts=logs.map((l,i)=>[xi(i),yi(l.value)]);
   const path=pts.map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-  const areaPath=path+` L${pts[pts.length-1][0].toFixed(1)} ${yi(yMin).toFixed(1)} L${pts[0][0].toFixed(1)} ${yi(yMin).toFixed(1)} Z`;
+  const areaPath=path+` L${pts[pts.length-1][0].toFixed(1)} ${yi(yMinChart).toFixed(1)} L${pts[0][0].toFixed(1)} ${yi(yMinChart).toFixed(1)} Z`;
   const xLabels=logs.map((l,i)=>{
     if(n<=6||i%Math.ceil(n/5)===0||i===n-1){
       const x=new Date(l.date+'T00:00');return `<text x="${xi(i).toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="9" fill="var(--text-muted)">${x.getDate()}/${x.getMonth()+1}</text>`;}
