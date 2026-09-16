@@ -809,7 +809,7 @@ document.getElementById('importFile').addEventListener('change',e=>{
 function render(){
   const ck=getCheckin(todayStr());
   document.getElementById('todayDate').textContent=fmtDate(todayStr());
-  document.getElementById('todaySub').textContent='14 sept 2026 → 31 août 2027';
+  document.getElementById('todaySub').textContent='21 sept 2026 → 31 août 2027';
 
   // countdown
   const days=Math.ceil((END_DATE-new Date())/86400000);
@@ -817,7 +817,7 @@ function render(){
   document.getElementById('cdGrade').textContent=state.currentGrade+' → Le Graal';
   document.getElementById('curGrade').textContent=state.currentGrade;
   // hero countdown (today page)
-  const START_DATE=new Date('2026-09-14T00:00:00');
+  const START_DATE=new Date('2026-09-21T00:00:00');
   const totalDays=Math.ceil((END_DATE-START_DATE)/86400000);
   const elapsed=Math.max(0,Math.ceil((new Date()-START_DATE)/86400000));
   const pct=Math.max(0,Math.min(100,(elapsed/totalDays)*100));
@@ -875,7 +875,7 @@ function render(){
 
   // reprise banner — only after start date and once at least one day is logged
   const rb=document.getElementById('repriseBanner');
-  const startDate=new Date('2026-09-14T00:00:00');
+  const startDate=new Date('2026-09-21T00:00:00');
   const hasAnyLog=Object.keys(state.checkins).length>0;
   const lastAction=lastActionDay();
   if(new Date()>=startDate && hasAnyLog && lastAction>=2){
